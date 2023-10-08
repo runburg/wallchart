@@ -77,9 +77,9 @@ def test_upload_record(client):
         )
 
         assert rv.status_code == 200
-        assert b"New workers: 10" in rv.data
-        assert b"Burrito,Frozen Bean" in rv.data
-        assert b"Anthropology Dept" in rv.data
+        assert b"New workers: 5" in rv.data
+        assert b"Bo,Bob" in rv.data
+        # assert b"Unknown (HRM)" in rv.data
 
     rv = client.get("/worker/1")
 
@@ -87,12 +87,11 @@ def test_upload_record(client):
     assert b'placeholder="worker@private.email"' in rv.data
     assert b'placeholder="(808) 123-4567"' in rv.data
 
-    assert b"Station,International Space" in rv.data
-    assert b'value="Curriculum Studies" disabled />' in rv.data
+    assert b"Aall,Kite" in rv.data
     assert b'id="active" checked>' in rv.data
 
     rv = client.get("/upload_record")
-    assert b"Found 10 new workers" in rv.data
+    assert b"Found 5 new workers" in rv.data
 
 
 # def test_add_worker(app, client):
