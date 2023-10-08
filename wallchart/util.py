@@ -71,6 +71,7 @@ def parse_csv(csv_file_b):
                 # name=row["Job Sect Desc"].title(),
                 # slug=slugify(row["Job Sect Desc"]),
                 name=department_name.title(),
+                # unit=unit,
                 slug=slugify(department_name),
                 unit=unit.id
             )
@@ -112,6 +113,7 @@ def parse_csv(csv_file_b):
                 updated=date.today(),
                 # contract=row["Job Code"],
                 unit=unit.name,
+
                 department_id=department.id,
                 organizing_dept_id=department.id,
                 active=True,
