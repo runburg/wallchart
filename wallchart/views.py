@@ -573,7 +573,8 @@ def upload_record():
     new_workers = (
         Worker.select(Worker, Department.name.alias("department_name"))
         .join(Department, on=(Worker.department_id == Department.id))
-        .where((Worker.added == last_updated()) & (Worker.department_id != 0))
+        .where(Worker.department_id != 0)
+        # .where((Worker.added == last_updated()) & (Worker.department_id != 0))
     ).dicts()
 
     if new_workers:

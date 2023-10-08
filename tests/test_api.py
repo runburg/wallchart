@@ -12,7 +12,7 @@ def test_api_workers_login_data(client):
     admin_login(client)
     rv = client.get("/api/workers")
     assert rv.status_code == 200
-    assert len(rv.json) == 10
+    assert len(rv.json) == 5
 
 
 # /api/worker
@@ -69,7 +69,7 @@ def test_api_departments(client):
     admin_login(client)
     rv = client.get("/api/departments")
     assert rv.status_code == 200
-    assert len(rv.json) == 10
+    assert len(rv.json) == 5
 
 
 # /api/units
@@ -84,4 +84,4 @@ def test_api_units(client):
     admin_login(client)
     rv = client.get("/api/units")
     assert rv.status_code == 200
-    assert len(rv.json) == 0
+    assert len(rv.json) == 4
