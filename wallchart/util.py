@@ -41,7 +41,7 @@ def login_required(f):
     @wraps(f)
     def inner(*args, **kwargs):
         if not session.get("logged_in"):
-            return redirect(url_for("login"))
+            return redirect(url_for("wallchart.login"))
         return f(*args, **kwargs)
 
     return inner
