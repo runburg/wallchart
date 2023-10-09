@@ -16,7 +16,7 @@ from wallchart import db_wrapper
 db = Blueprint("db", __name__)
 
 
-class Unit(db_wrapper.Model):
+class Workplace(db_wrapper.Model):
     id = AutoField()
     name = CharField(unique=True)
     slug = CharField()
@@ -27,7 +27,7 @@ class Department(db_wrapper.Model):
     name = CharField(unique=True)
     slug = CharField()
     alias = CharField(unique=True, null=True)
-    unit = ForeignKeyField(Unit, backref="departments", null=True)
+    workplace = ForeignKeyField(Workplace, backref="departments", null=True)
 
 
 class Worker(db_wrapper.Model):
@@ -39,10 +39,10 @@ class Worker(db_wrapper.Model):
     phone = IntegerField(unique=True, null=True)
     notes = TextField(null=True)
     contract = CharField(null=True)
-    unit = CharField(null=True)
+    workplace = CharField(null=True)
     department_id = IntegerField(null=True)
     organizing_dept_id = IntegerField(null=True)
-    unit_chair_id = ForeignKeyField(Unit, field=Unit.id, backref="chairs", null=True)
+    workplace_chair_id = ForeignKeyField(Workplace, field=Workplace.id, backref="chairs", null=True)
     dept_chair_id = ForeignKeyField(
         Department, field=Department.id, backref="chairs", null=True
     )
@@ -75,7 +75,7 @@ class Participation(db_wrapper.Model):
 def create_tables():
     with db_wrapper.database.connection_context():
         db_wrapper.database.create_tables(
-            [Unit, Department, Worker, StructureTest, Participation]
+            [Workplace, Department, Worker, StructureTest, Participation]
         )
         department, _ = Department.get_or_create(
             id=0,

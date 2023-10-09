@@ -9,7 +9,7 @@ from flask import redirect, session, url_for
 from peewee import fn
 from slugify import slugify
 
-from wallchart.db import Department, Worker, Unit
+from wallchart.db import Department, Worker, Workplace
 
 
 def max_age():
@@ -59,36 +59,36 @@ def parse_csv(csv_file_b):
             # print(row.items())
             # department_name = mapping["mapping"].get(row["Sect Desc"], row["Sect Desc"])
 
-            unit_name = row["Unit (in UnionWare)"]
-            unit, _ = Unit.get_or_create(
-                name=unit_name.title(),
-                slug=slugify(unit_name),
+            workplace_name = row["Unit (in UnionWare)"]
+            workplace, _ = Workplace.get_or_create(
+                name=workplace_name.title(),
+                slug=slugify(workplace_name),
             )
 
-            department_name = f"Unknown ({unit_name})"
+            department_name = f"Unknown ({workplace_name})"
 
             department, _ = Department.get_or_create(
                 # name=row["Job Sect Desc"].title(),
                 # slug=slugify(row["Job Sect Desc"]),
                 name=department_name.title(),
-                # unit=unit,
+                # workplace=workplace,
                 slug=slugify(department_name),
-                unit=unit.id
+                workplace=workplace.id
             )
-            # print('dpet unit', department.unit, department.unit is None)
+            # print('dpet workplace', department.workplace, department.workplace is None)
 
-            # # Populate department unit if it hasn't been set
+            # # Populate department workplace if it hasn't been set
             try:
-                print(department.unit)
+                print(department.workplace)
 
-            except Unit.DoesNotExist:
+            except Workplace.DoesNotExist:
                 department.update(
-                    unit=unit
+                    workplace=workplace
                 ).where(
                     Department.id == department.id,
                 ).execute()
-                # department.unit = unit
-            # print('dpet unit', department.unit.name)
+                # department.workplace = workplace
+            # print('dpet workplace', department.workplace.name)
 
             worker_name = f"{row['Last Name']},{row['First Name']}"
             # if row["Middle"]:
@@ -106,13 +106,13 @@ def parse_csv(csv_file_b):
                     department_id=department.id,
                     organizing_dept_id=department.id,
                     # default organizing_dept to department ID, can be changed later on
-                    unit=unit,
+                    workplace=workplace,
                 )
 
             worker.update(
                 updated=date.today(),
-                # contract=row["Job Code"],
-                unit=unit.name,
+                contract='roster',
+                workplace=workplace.name,
 
                 department_id=department.id,
                 organizing_dept_id=department.id,

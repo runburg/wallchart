@@ -1,43 +1,43 @@
 {% extends "layout.html" %}
 {% block body %}
 <script>
-function toggle_departments(unit) {
-	var departments = document.getElementsByClassName(unit);
+function toggle_departments(workplace) {
+	var departments = document.getElementsByClassName(workplace);
 	for (const department of departments) {
 		department.classList.toggle("d-none");
 	}
 }
 </script>
-<h2 class="p-2 text-left display-5">Units ({{ units | length }})</h2>
+<h2 class="p-2 text-left display-5">Workplaces ({{ workplaces | length }})</h2>
 <table class="table table-hover">
     <tr>
         <th scope="col" class="col-5">Name</th>
-        <th scope="col" class="col-1">Members</th>
+        <!-- <th scope="col" class="col-1">Members</th> -->
 		<th scope="col" class="col-1">{{ latest_test_name }}</th>
         <th scope="col" class="col-5">Organizer</th>
     </tr>
-    {% for unit in units %}
+    {% for workplace in workplaces %}
     <tr>
         <td>
-		<a href="#" onclick="toggle_departments('unit-{{ unit.id }}');">
-                <b>{{ unit.name }}</b> ({{ unit.worker_count }})
+		<a href="#" onclick="toggle_departments('workplace-{{ workplace.id }}');">
+                <b>{{ workplace.name }}</b> ({{ workplace.worker_count }})
             </a>
         </td>
+        <!-- <td> -->
+        <!--     {% if workplace.worker_count > 0 %} -->
+        <!--     {% set percentage = (workplace.members / workplace.worker_count * 100) | round(2) %} -->
+        <!--     {% endif %} -->
+        <!--     <meter style="height: 25px;" low="50" high="80" max="100" optimum="100" value="{{ percentage }}" title="{{ workplace.members }}&#x2F;{{ workplace.worker_count }} completed"></meter> -->
+        <!-- </td> -->
         <td>
-            {% if unit.worker_count > 0 %}
-            {% set percentage = (unit.members / unit.worker_count * 100) | round(2) %}
+            {% if workplace.worker_count > 0 %}
+            {% set percentage = ( workplace.latest / workplace.worker_count * 100) | round(2) %}
             {% endif %}
-            <meter style="height: 25px;" low="50" high="80" max="100" optimum="100" value="{{ percentage }}" title="{{ unit.members }}&#x2F;{{ unit.worker_count }} completed"></meter>
-        </td>
-        <td>
-            {% if unit.worker_count > 0 %}
-            {% set percentage = ( unit.latest / unit.worker_count * 100) | round(2) %}
-            {% endif %}
-            <meter style="height: 25px;" low="50" high="80" max="100" optimum="100" value="{{ percentage }}" title="{{ unit.latest }}&#x2F;{{ unit.worker_count }}"></meter>
+            <meter style="height: 25px;" low="50" high="80" max="100" optimum="100" value="{{ percentage }}" title="{{ workplace.latest }}&#x2F;{{ workplace.worker_count }}"></meter>
         </td>
         <td>
 		<ul>
-		{% for chair in unit.chairs %}
+		{% for chair in workplace.chairs %}
 		<li>
 		<a href="{{ url_for("worker", worker_id=chair.id) }}">
 		    {%- if chair.preferred_name %}
@@ -51,8 +51,8 @@ function toggle_departments(unit) {
 		<ul>
 	</td>
       </tr>
-      {% for department in unit.departments %}
-      <tr class="d-none unit-{{ unit.id }}">
+      {% for department in workplace.departments %}
+      <tr class="d-none workplace-{{ workplace.id }}">
 	<td>
                 {% if department.alias %}
                 <b>{{ department.alias }}</b> <small class="text-muted">{{ department.name }}</small>

@@ -25,7 +25,7 @@
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                             <li><a class="dropdown-item" href="{{ url_for('admin') }}">Overview</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('former') }}">Former Workers</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('units') }}">Manage Units</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('workplaces') }}">Manage Workplaces</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('users') }}">Manage Users</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('upload_record') }}">Upload Record</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('worker') }}">Add Worker</a></li>
@@ -38,8 +38,8 @@
                             Structure Tests</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('units_view') }}">
-                            Units</a>
+                        <a class="nav-link" href="{{ url_for('workplaces_view') }}">
+                            Workplaces</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('departments') }}">

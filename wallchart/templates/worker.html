@@ -36,7 +36,7 @@
     {% if worker.contract == "manual" %}
     <span class="badge bg-info">Manually added</span>
     {% endif %}
-    Added {{ worker.added }}, last contract {{ worker.updated }}
+    Added {{ worker.added }}, last roster {{ worker.updated }}
 </p>
 <form action="{{ url_for('worker', worker_id=worker.id) if worker else url_for("worker") }}"
     method=post autocomplete="new-password">
@@ -60,13 +60,13 @@
             </div>
         </div>
 
-        <div class="row mb-3">
-            <label for="pronouns" class="col-md-2 col-form-label">Pronouns</label>
-            <div class="col-md-10">
-                <input name="pronouns" class="form-control" type="text"
-                    value="{{ worker.pronouns or "" }}" placeholder="gender is a spectrum" />
-            </div>
-        </div>
+        <!-- <div class="row mb-3"> -->
+        <!--     <label for="pronouns" class="col-md-2 col-form-label">Pronouns</label> -->
+        <!--     <div class="col-md-10"> -->
+        <!--         <input name="pronouns" class="form-control" type="text" -->
+        <!--             value="{{ worker.pronouns or "" }}" placeholder="gender is a spectrum" /> -->
+        <!--     </div> -->
+        <!-- </div> -->
 
         <div class="row mb-3">
             <label for="email" class="col-md-2 col-form-label">E-Mail</label>
@@ -166,8 +166,7 @@
                         id="active" {{ "checked" if (worker.active or not worker.id) }}>
                     <label class="form-check-label" for="active">Active</label>
                     <div id="passwordHelp" class="form-text">
-                        uncheck if worker graduated or is otherwise not
-                        currently associated with the university
+                        uncheck if you do not want the worker to show up on the wallchart 
                     </div>
                 </div>
             </div>

@@ -72,16 +72,16 @@ def test_api_departments(client):
     assert len(rv.json) == 5
 
 
-# /api/units
+# /api/workplaces
 
 
-def test_api_units_nologin(client):
-    rv = client.get("/api/units")
+def test_api_workplaces_nologin(client):
+    rv = client.get("/api/workplaces")
     assert rv.status_code == 302
 
 
-def test_api_units(client):
+def test_api_workplaces(client):
     admin_login(client)
-    rv = client.get("/api/units")
+    rv = client.get("/api/workplaces")
     assert rv.status_code == 200
     assert len(rv.json) == 4

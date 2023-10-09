@@ -12,7 +12,7 @@
         <tr>
             <th scope="col">Name</th>
             <th scope="col">Organizes Department</th>
-            <th scope="col">Organizes Unit</th>
+            <th scope="col">Organizes Workplace</th>
             <th scope="col"></th>
         </tr>
     </thead>
@@ -33,12 +33,12 @@
 			{{ user.department_name }}
                 </td>
                 <td>
-                    <select name="unit_chair_id" class="form-select">
+                    <select name="workplace_chair_id" class="form-select">
                         <option value="">None</option>
-			{% set user_unit = user.unit_chair_id %}
-                        {% for unit in units %}
-                        <option value="{{ unit.id }}" {% if user_unit == unit.id %}selected="selected" {% endif %}>
-                            {{ unit.name }}
+			{% set user_workplace = user.workplace_chair_id %}
+                        {% for workplace in workplaces %}
+                        <option value="{{ workplace.id }}" {% if user_workplace == workplace.id %}selected="selected" {% endif %}>
+                            {{ workplace.name }}
                         </option>
                         {% endfor %}
                     </select>
