@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify
 from playhouse.flask_utils import get_object_or_404
 
-from wallchart.db import Department, Participation, Unit, Worker
+from wallchart.db import Department, Participation, Workplace, Worker
 from wallchart.util import login_required
 
 api = Blueprint("api", __name__, url_prefix="/api")
@@ -58,7 +58,7 @@ def api_departments():
     return jsonify(list(Department.select().dicts()))
 
 
-@api.route("/units")
+@api.route("/workplaces")
 @login_required
-def api_units():
-    return jsonify(list(Unit.select().dicts()))
+def api_workplaces():
+    return jsonify(list(Workplace.select().dicts()))

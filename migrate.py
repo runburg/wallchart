@@ -1,6 +1,6 @@
 from playhouse.migrate import *
 from datetime import date
-from main import Department, Unit, Worker
+from main import Department, Workplace, Worker
 
 db = SqliteDatabase("wallcharts.db")
 migrator = SqliteMigrator(db)
@@ -14,8 +14,8 @@ migrator = SqliteMigrator(db)
 # migrate(
 #    migrator.add_column(
 #        "Worker",
-#        "unit_chair_id",
-#        ForeignKeyField(Unit, field=Unit.id, backref="chairs", null=True),
+#        "workplace_chair_id",
+#        ForeignKeyField(Workplace, field=Workplace.id, backref="chairs", null=True),
 #    )
 # )
 # migrate(
@@ -32,7 +32,7 @@ Worker.delete().where(Worker.id == 1289).execute()
 
 migrate(
     migrator.drop_not_null("Worker", "organizing_dept_id"),
-    migrator.drop_not_null("Worker", "unit"),
+    migrator.drop_not_null("Worker", "workplace"),
     migrator.drop_not_null("Worker", "contract"),
     migrator.drop_not_null("Worker", "department_id"),
     migrator.add_index("Worker", ("name",), True),

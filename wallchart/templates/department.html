@@ -19,16 +19,16 @@
     </div>
     <div class="col-md">
       <div class="form-floating mb-2">
-        <select class="form-select" name="unit" id="unit" aria-label="Unit">
+        <select class="form-select" name="workplace" id="workplace" aria-label="Workplace">
           <option value="">None</option>
-          {% set department_unit_id = department.unit.id %}
-          {%- for unit in units %}
-          <option value="{{ unit.id }}" {% if department_unit_id == unit.id %}selected="selected" {% endif %}>
-            {{- unit.name -}}
+          {% set department_workplace_id = department.workplace.id %}
+          {%- for workplace in workplaces %}
+          <option value="{{ workplace.id }}" {% if department_workplace_id == workplace.id %}selected="selected" {% endif %}>
+            {{- workplace.name -}}
           </option>
           {%- endfor %}
         </select>
-        <label for="unit">Unit of this department</label>
+        <label for="workplace">Workplace of this department</label>
       </div>
     </div>
     <div class="col-md-2">

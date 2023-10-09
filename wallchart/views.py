@@ -17,7 +17,7 @@ from peewee import JOIN, Case, fn
 from playhouse.flask_utils import get_object_or_404
 from slugify import slugify
 
-from wallchart.db import Department, Participation, StructureTest, Unit, Worker
+from wallchart.db import Department, Participation, StructureTest, Workplace, Worker
 from wallchart.util import (
     bcryptify,
     is_admin,
@@ -54,7 +54,7 @@ def login():
                 session["user_id"] = user.id
                 session["email"] = user.email
                 session["department_id"] = user.organizing_dept_id
-                if user.unit_chair_id:
+                if user.workplace_chair_id:
                     session["admin"] = True
                 flash(f"You are logged in as {user.email}")
                 return redirect(url_for("department"))
@@ -164,25 +164,25 @@ def find_worker():
     return render_template("find_worker.html")
 
 
-@views.route("/units/")
+@views.route("/workplaces/")
 @login_required
-def units_view():
+def workplaces_view():
     latest_test = (
         StructureTest.select(StructureTest.id, StructureTest.name)
         .order_by(StructureTest.id.desc())
         .get()
     )
 
-    units = (
-        Unit.select(
-            Unit,
+    workplaces = (
+        Workplace.select(
+            Workplace,
             fn.count(Worker.id).alias("worker_count"),
             fn.sum(Case(Participation.structure_test, ((1, 1),), 0)).alias("members"),
             fn.sum(Case(Participation.structure_test, ((latest_test.id, 1),), 0)).alias(
                 "latest"
             ),
         )
-        .join(Department, JOIN.LEFT_OUTER, on=(Department.unit == Unit.id))
+        .join(Department, JOIN.LEFT_OUTER, on=(Department.workplace == Workplace.id))
         .join(Worker, JOIN.LEFT_OUTER, on=(Department.id == Worker.organizing_dept_id))
         .join(Participation, JOIN.LEFT_OUTER, on=(Worker.id == Participation.worker))
         .join(
@@ -191,33 +191,33 @@ def units_view():
             on=(Participation.structure_test == StructureTest.id),
         )
         .where(Worker.active == True)
-        .group_by(Unit.id)
+        .group_by(Workplace.id)
     )
-    return render_template("units.html", units=units, latest_test_name=latest_test.name)
+    return render_template("workplaces.html", workplaces=workplaces, latest_test_name=latest_test.name)
 
 
-@views.route("/manage-units/", methods=["GET", "POST"])
+@views.route("/manage-workplaces/", methods=["GET", "POST"])
 @login_required
-def units():
+def workplaces():
     if request.method == "POST":
         action = request.args.get("action")
         if action == "create":
-            Unit.create(
+            Workplace.create(
                 name=request.form["name"],
                 slug=slugify(request.form["name"]),
             )
-            flash(f"Unit \"{ request.form['name'] }\" created")
+            flash(f"Workplace \"{ request.form['name'] }\" created")
             return redirect(url_for("admin"))
         elif action == "delete":
-            unit_id = request.args.get("unit_id")
-            Unit.delete().where(Unit.id == unit_id).execute()
-            Department.update({Department.unit: None}).where(
-                Department.unit == unit_id
+            workplace_id = request.args.get("workplace_id")
+            Workplace.delete().where(Workplace.id == workplace_id).execute()
+            Department.update({Department.workplace: None}).where(
+                Department.workplace == workplace_id
             ).execute()
-            flash("Unit deleted")
+            flash("Workplace deleted")
 
-    units = Unit.select().group_by(Unit.name)
-    return render_template("units_edit.html", units=units)
+    workplaces = Workplace.select().group_by(Workplace.name)
+    return render_template("workplaces_edit.html", workplaces=workplaces)
 
 
 @views.route("/departments/")
@@ -229,11 +229,11 @@ def departments():
         .get()
     )
 
-    units = (
+    workplaces = (
         Department.select(
             Department,
-            Case(None, ((Unit.name.is_null(), "No Unit"),), Unit.name).alias(
-                "unit_name"
+            Case(None, ((Workplace.name.is_null(), "No Workplace"),), Workplace.name).alias(
+                "workplace_name"
             ),
             # select `none` as entry to calculate the total number of workers.
             # It's a LEFT JOIN so all workers are selected, however if they
@@ -251,7 +251,7 @@ def departments():
                 "latest"
             ),
         )
-        .join(Unit, JOIN.LEFT_OUTER, on=(Department.unit == Unit.id))
+        .join(Workplace, JOIN.LEFT_OUTER, on=(Department.workplace == Workplace.id))
         .join(Worker, JOIN.LEFT_OUTER, on=(Department.id == Worker.organizing_dept_id))
         .join(Participation, JOIN.LEFT_OUTER, on=(Worker.id == Participation.worker))
         .join(
@@ -262,11 +262,11 @@ def departments():
         .where(Worker.active == True)
         .group_by(Department.id)
     )
-    department_count = len(units)
+    department_count = len(workplaces)
     return render_template(
         "departments.html",
         latest_test_name=latest_test.name,
-        units=units,
+        workplaces=workplaces,
         department_count=department_count,
     )
 
@@ -280,7 +280,7 @@ def department(department_slug=None):
         if is_admin():
             Department.update(
                 alias=request.form["alias"].strip() or None,
-                unit=request.form["unit"] or None,
+                workplace=request.form["workplace"] or None,
             ).where(Department.slug == department_slug).execute()
         flash("Department updated")
 
@@ -331,7 +331,7 @@ def department(department_slug=None):
         .order_by(Worker.active.desc(), Worker.name)
     )
 
-    units = Unit.select().order_by(Unit.name)
+    workplaces = Workplace.select().order_by(Workplace.name)
 
     emailList = ""
     for user in workers_active:
@@ -351,7 +351,7 @@ def department(department_slug=None):
         structure_tests=structure_tests,
         last_updated=last_updated(),
         emails=emailList,
-        units=units,
+        workplaces=workplaces,
     )
 
 
@@ -398,7 +398,7 @@ def worker(worker_id=None):
     if request.method == "POST":
         data = dict(
             preferred_name=request.form.get("preferred_name", "").strip(),
-            pronouns=request.form.get("pronouns", "").strip(),
+            # pronouns=request.form.get("pronouns", "").strip(),
             email=request.form.get("email", "").strip() or None,
             notes=request.form.get("notes", "").strip(),
             active=bool(request.form.get("active")),
@@ -437,7 +437,7 @@ def worker(worker_id=None):
                 department_id=0,
                 **data,
                 updated=date.today(),
-                unit=0,
+                workplace=0,
             )
             flash("Worker added")
 
@@ -495,7 +495,7 @@ def user_delete(user_id):
 def users():
     if request.method == "POST":
         Worker.update(
-            unit_chair_id=request.form["unit_chair_id"] or None,
+            workplace_chair_id=request.form["workplace_chair_id"] or None,
         ).where(Worker.id == request.args.get("user_id")).execute()
         flash("User updated")
 
@@ -506,9 +506,9 @@ def users():
         .order_by(Worker.name)
         .dicts()
     )
-    units = Unit.select().order_by(Unit.name)
+    workplaces = Workplace.select().order_by(Workplace.name)
     return render_template(
-        "users.html", users=users, units=units, departments=departments
+        "users.html", users=users, workplaces=workplaces, departments=departments
     )
 
 
@@ -570,11 +570,12 @@ def upload_record():
         if record:
             parse_csv(record)
 
+    flash('last updated', last_updated())
     new_workers = (
         Worker.select(Worker, Department.name.alias("department_name"))
         .join(Department, on=(Worker.department_id == Department.id))
         .where(Worker.department_id != 0)
-        # .where((Worker.added == last_updated()) & (Worker.department_id != 0))
+        .where((Worker.added == last_updated()) & (Worker.department_id != 0))
     ).dicts()
 
     if new_workers:
