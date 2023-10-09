@@ -28,6 +28,7 @@ jobs:
           poetry version "${TAG##*v}"
 
       - name: Build and publish
+        continue-on-error: true
         run: |
           poetry build
           poetry publish \
