@@ -25,7 +25,7 @@
   {% for worker in workers %}
   <tr>
     <td>
-      <a href="{{ url_for('worker', worker_id=worker.id) }}">
+      <a href="{{ url_for('wallchart.worker', worker_id=worker.id) }}">
         {% if worker.preferred_name%}
         <b>{{ worker.preferred_name }}</b> ({{ worker.name }})
         {% else %}

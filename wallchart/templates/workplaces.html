@@ -39,7 +39,7 @@ function toggle_departments(workplace) {
 		<ul>
 		{% for chair in workplace.chairs %}
 		<li>
-		<a href="{{ url_for("worker", worker_id=chair.id) }}">
+		<a href="{{ url_for("wallchart.worker", worker_id=chair.id) }}">
 		    {%- if chair.preferred_name %}
 		    {{ chair.preferred_name }} ({{ chair.name }})
 		    {% else %}
@@ -66,7 +66,7 @@ function toggle_departments(workplace) {
 		<ul><ul>
 		{% for chair in department.chairs %}
 		<li>
-		<a href="{{ url_for("worker", worker_id=chair.id) }}">
+		<a href="{{ url_for("wallchart.worker", worker_id=chair.id) }}">
 		    {%- if chair.preferred_name %}
 		    {{ chair.preferred_name }} ({{ chair.name }})
 		    {% else %}

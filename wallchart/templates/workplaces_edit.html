@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
-<h2 class="p-2 text-left display-5">Users</h2>
+<h2 class="p-2 text-left display-5">Manage workplaces</h2>
 <p>
     Create workplaces.
 </p>
@@ -10,7 +10,7 @@
 <ul>
     {% for workplace in workplaces %}
     <li>
-        <form class="form-inline" action="{{ url_for('workplaces', action="delete", workplace_id=workplace.id) }}" method=post>
+        <form class="form-inline" action="{{ url_for('wallchart.workplaces', action="delete", workplace_id=workplace.id) }}" method=post>
             {{ workplace.name }}
             <button type="submit" class="btn btn-sm" onclick="return confirm('Do you really want to delete {{ workplace.name }}');">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
@@ -23,7 +23,7 @@
     {% if workplace.departments %}
     <ul>
         {% for department in workplace.departments %}
-        <li><a href="{{ url_for("department", department_slug=department.slug) }}">
+        <li><a href="{{ url_for("wallchart.departments", department_slug=department.slug) }}">
                 {% if department.alias %}
                 <b>{{ department.alias }}</b> ({{ department.name }})
                 {% else %}
@@ -41,7 +41,7 @@
 <h3>
     Create new workplace
 </h3>
-<form action="{{ url_for("workplaces", action="create") }}" method=post>
+<form action="{{ url_for("wallchart.workplaces", action="create") }}" method=post>
     <label for="name">Name</label>
     <input name="name" type="text" value="" />
     <input type="submit" value="Create workplace" />

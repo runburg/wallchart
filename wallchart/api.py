@@ -23,6 +23,7 @@ def api_workers():
     )
 
 
+@api.route("/worker")
 @api.route("/worker/<int:worker_id>")
 @login_required
 def api_worker(worker_id):
