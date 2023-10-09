@@ -20,7 +20,7 @@
         {% for user in  users %}
         <tr>
             <td scope="row">
-                <a href="{{ url_for('worker', worker_id=user.id) }}">
+                <a href="{{ url_for('wallchart.worker', worker_id=user.id) }}">
 		    {%- if user.preferred_name %}
 		    {{ user.preferred_name }} ({{ user.name }})
 		    {% else %}
@@ -28,7 +28,7 @@
 		    {% endif %}
                 </a>
             </td>
-            <form class="form-inline" action="{{ url_for('users', user_id=user.id) }}" method="post">
+            <form class="form-inline" action="{{ url_for('wallchart.users', user_id=user.id) }}" method="post">
                 <td>
 			{{ user.department_name }}
                 </td>
@@ -50,7 +50,7 @@
                         </svg>
                     </button>
                     <a class="btn btn-sm"
-			    href="{{ url_for('user_delete', user_id=user.id) }}"
+			    href="{{ url_for('wallchart.user_delete', user_id=user.id) }}"
 			    onclick="return confirm('Do you really want to remove {{ user.name }} from users');">
 		          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
 		            <path fill-rule="evenodd" clip-rule="evenodd" d="M13.854 2.146a.5.5 0 0 1 0 .708l-11 11a.5.5 0 0 1-.708-.708l11-11a.5.5 0 0 1 .708 0Z" fill="#000"/>

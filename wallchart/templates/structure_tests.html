@@ -5,7 +5,7 @@
 <div class="col">
     <div class="card">
         <div class="card-body">
-            <a href="{{ url_for("structure_test", action="create") }}">
+            <a href="{{ url_for("wallchart.structure_test", action="create") }}">
                 <h5 class="card-title">Add Structure Test</h5>
             </a>
         </div>
@@ -25,7 +25,7 @@
     <tr>
         <td>
 	  {% if session.admin %}
-            <a href="{{ url_for('structure_test', structure_test_id=structure_test.id) }}">
+            <a href="{{ url_for('wallchart.structure_test', structure_test_id=structure_test.id) }}">
                 {{ structure_test.name }}
             </a>
 	    {% else %}
@@ -42,7 +42,7 @@
         </td>
         <td>
 	    {% if session.admin %}
-            <form class="form-inline" action="{{ url_for('structure_test', action="delete", structure_test_id=structure_test.id) }}" method=post>
+            <form class="form-inline" action="{{ url_for('wallchart.structure_test', action="delete", structure_test_id=structure_test.id) }}" method=post>
                 <button type="submit" class="btn btn-sm" onclick="return confirm('Do you really want to delete {{ structure_test.name }}');">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
                         <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path>

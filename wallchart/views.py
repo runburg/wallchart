@@ -27,7 +27,7 @@ from wallchart.util import (
     parse_csv,
 )
 
-views = Blueprint("", __name__, url_prefix="/")
+views = Blueprint("wallchart", __name__, url_prefix="/")
 
 
 @views.route("/login/", methods=["GET", "POST"])
@@ -43,7 +43,7 @@ def login():
             session["department_id"] = 0
             session["admin"] = True
             flash("You are logged in as administrator.")
-            return redirect(url_for("admin"))
+            return redirect(url_for("wallchart.admin"))
         else:
             user = Worker.get_or_none(Worker.email == request.form["email"])
 
@@ -57,7 +57,7 @@ def login():
                 if user.workplace_chair_id:
                     session["admin"] = True
                 flash(f"You are logged in as {user.email}")
-                return redirect(url_for("department"))
+                return redirect(url_for("wallchart.department"))
             else:
                 # add pseudo operation to avoid timing attacks
                 bcrypt.checkpw(
@@ -75,11 +75,11 @@ def login():
 def homepage():
     if session.get("logged_in"):
         if is_admin():
-            return redirect(url_for("admin"))
+            return redirect(url_for("wallchart.admin"))
         else:
-            return redirect(url_for("department"))
+            return redirect(url_for("wallchart.department"))
     else:
-        return redirect(url_for("login"))
+        return redirect(url_for("wallchart.login"))
 
 
 @views.route("/download_db")
@@ -148,7 +148,7 @@ def structure_test(structure_test_id=None):
             else:
                 flash("Structure test with same name already exists")
 
-        return redirect(url_for("structure_tests"))
+        return redirect(url_for("wallchart.structure_tests"))
 
     if structure_test_id:
         structure_test = StructureTest.get(StructureTest.id == structure_test_id)
@@ -207,7 +207,7 @@ def workplaces():
                 slug=slugify(request.form["name"]),
             )
             flash(f"Workplace \"{ request.form['name'] }\" created")
-            return redirect(url_for("admin"))
+            return redirect(url_for("wallchart.admin"))
         elif action == "delete":
             workplace_id = request.args.get("workplace_id")
             Workplace.delete().where(Workplace.id == workplace_id).execute()
@@ -387,7 +387,7 @@ def worker_delete(worker_id):
     Worker.delete().where(Worker.id == worker_id).execute()
     Participation.delete().where(Participation.worker == worker_id).execute()
     flash(f"Deleted worker {worker.name} ({worker.id})")
-    return redirect(url_for("homepage"))
+    return redirect(url_for("wallchart.homepage"))
 
 
 @views.route("/worker/", methods=["GET", "POST"])
@@ -443,7 +443,7 @@ def worker(worker_id=None):
 
         return redirect(
             url_for(
-                "department",
+                "wallchart.department",
                 department_slug=Department.select(Department.slug)
                 .where(Department.id == request.form["organizing_dept"])
                 .scalar(),
@@ -487,7 +487,7 @@ def user_delete(user_id):
     user = get_object_or_404(Worker, (Worker.id == user_id))
     Worker.update({Worker.password: None}).where(Worker.id == user_id).execute()
     flash(f"Deleted user password of {user.name} ({user.id})")
-    return redirect(url_for("users"))
+    return redirect(url_for("wallchart.users"))
 
 
 @views.route("/users/", methods=["GET", "POST"])
@@ -546,7 +546,7 @@ def participation(worker_id, structure_test_id, status):
 def logout():
     session.clear()
     flash("You were logged out")
-    return redirect(url_for("homepage"))
+    return redirect(url_for("wallchart.homepage"))
 
 
 @views.route("/upload_record", methods=["GET", "POST"])
@@ -570,7 +570,6 @@ def upload_record():
         if record:
             parse_csv(record)
 
-    flash('last updated', last_updated())
     new_workers = (
         Worker.select(Worker, Department.name.alias("department_name"))
         .join(Department, on=(Worker.department_id == Department.id))

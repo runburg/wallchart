@@ -15,7 +15,7 @@
         {% if worker_count > 0 %}
             <tr>
                 <td>
-                    <a href="{{ url_for('department', department_slug=department.slug) }}">
+                    <a href="{{ url_for('wallchart.department', department_slug=department.slug) }}">
                         {% if department.alias %}
                             <b>{{ department.alias }}</b> ({{ department.name }})
                         {% else %}
@@ -43,7 +43,7 @@
                 <td>
 
             {% for chair in department.chairs %}
-            <a href="{{ url_for("worker", worker_id=chair.id) }}">
+            <a href="{{ url_for("wallchart.worker", worker_id=chair.id) }}">
                 {%- if chair.preferred_name %}
                     {{ chair.preferred_name }} ({{ chair.name }})
                 {% else %}
@@ -70,7 +70,7 @@
     {% if department.worker_count == 0 %}
     <tr>
         <td>
-            <a href="{{ url_for('department', department_slug=department.slug) }}">
+            <a href="{{ url_for('wallchart.department', department_slug=department.slug) }}">
                 {% if department.alias %}
                 <b>{{ department.alias }}</b> ({{ department.name }})
                 {% else %}

@@ -14,7 +14,7 @@
     {{ worker.name }}
     {% endif %}
     {%- if worker.id %}
-    <a href="{{ url_for('worker_delete', worker_id=worker.id) }}">
+    <a href="{{ url_for('wallchart.worker_delete', worker_id=worker.id) }}">
             <button type="submit" class="btn btn-sm" onclick="return confirm('Do you really want to delete {{ worker.name }}');">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
                     <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path>
@@ -38,7 +38,7 @@
     {% endif %}
     Added {{ worker.added }}, last roster {{ worker.updated }}
 </p>
-<form action="{{ url_for('worker', worker_id=worker.id) if worker else url_for("worker") }}"
+<form action="{{ url_for('wallchart.worker', worker_id=worker.id) if worker else url_for('wallchart.worker', worker_id=None) }}"
     method=post autocomplete="new-password">
     <fieldset
         {{ "disabled" if (session.department_id != worker.organizing_dept_id) and not session.admin }}>

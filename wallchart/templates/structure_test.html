@@ -5,7 +5,7 @@
     <div class="col">
         <div class="card">
             <div class="card-body">
-                <a href="{{ url_for("structure_tests") }}">
+                <a href="{{ url_for("wallchart.structure_tests") }}">
                     <h5 class="card-title">Structure Test Overview</h5>
                 </a>
             </div>
@@ -13,9 +13,9 @@
     </div>
 </div>
 {% if structure_test %}
-<form action="{{ url_for("structure_test", structure_test_id=structure_test.id) }}" method=post>
+<form action="{{ url_for("wallchart.structure_test", structure_test_id=structure_test.id) }}" method=post>
 {% else %}
-<form action="{{ url_for("structure_test") }}" method=post>
+<form action="{{ url_for("wallchart.structure_test") }}" method=post>
 {% endif %}
         <p>
             <label for="name">Name</label>
