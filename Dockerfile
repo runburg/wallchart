@@ -15,6 +15,6 @@ COPY ./mapping.yml .
 
 COPY ./app.py .
 
-CMD ["cd", "app/" "&&", "gunicorn"  , "-b", "0.0.0.0:8000", "app"]
+CMD ["gunicorn"  , "-b", "0.0.0.0:8000", "app"]
 
 EXPOSE 8000
