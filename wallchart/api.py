@@ -17,7 +17,7 @@ def api_workers():
                 Department.slug.alias("department_slug"),
                 Department.name.alias("department_name"),
             )
-            .join(Department, on=(Worker.organizing_dept_id == Department.id))
+            .join(Department, on=Worker.department)
             .dicts()
         )
     )
@@ -33,7 +33,7 @@ def api_worker(worker_id):
             Department.slug.alias("department_slug"),
             Department.name.alias("department_name"),
         )
-        .join(Department, on=(Worker.organizing_dept_id == Department.id))
+        .join(Department, on=Worker.department)
         .dicts()
     )
 
@@ -46,8 +46,8 @@ def api_worker(worker_id):
 def api_participation():
     return jsonify(
         list(
-            Participation.select(Participation, Worker.organizing_dept_id)
-            .join(Worker, on=(Participation.worker == Worker.id))
+            Participation.select(Participation, Worker.department.id)
+            .join(Worker, on=Participation.worker)
             .dicts()
         )
     )

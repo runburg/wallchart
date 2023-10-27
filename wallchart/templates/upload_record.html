@@ -12,7 +12,7 @@
 
 <h2>New workers</h2>
 
-{% for department_name, workers in new_workers | groupby("department_name") %}
+{% for department_name, workers in new_workers | groupby('department_name') %}
 <h3>
   {{ department_name }}
 </h3>
@@ -31,9 +31,12 @@
         {% else %}
         <b>{{ worker.name }}</b>
         {% endif %}
+  	{% if worker.department > 0 and (worker.secondary_department != None) %}
+  	<span class="badge bg-warning">Two jobs</span>
+  	{% endif %}
       </a>
     </td>
-    <td>{{ worker.workplace }}</td>
+    <td>{{ worker.workplace_name }}</td>
     <!-- <td>{{ worker.contract }}</td> -->
   </tr>
   {% endfor %}

@@ -32,7 +32,7 @@ def create_app(test_config=None):
         elif test_config.endswith(".py"):
             app.config.from_pyfile(test_config)
 
-    app.config["DATABASE"] = f"sqlite:///{app.config['DATABASE']}"
+    app.config["DATABASE"] = f"sqlite:///{app.instance_path}/{app.config['DATABASE']}"
 
     assert app.secret_key != "changeme", f"Please change SECRET_KEY in config.py"
 

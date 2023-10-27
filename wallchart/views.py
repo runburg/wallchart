@@ -53,7 +53,7 @@ def login():
                 session["logged_in"] = True
                 session["user_id"] = user.id
                 session["email"] = user.email
-                session["department_id"] = user.organizing_dept_id
+                session["department_id"] = user.department_id
                 if user.workplace_chair_id:
                     session["admin"] = True
                 flash(f"You are logged in as {user.email}")
@@ -85,6 +85,7 @@ def homepage():
 @views.route("/download_db")
 @login_required
 def download_db():
+    flash(f"database file is {current_app.config['DATABASE']}")
     return send_file(
         current_app.config["DATABASE"][len("sqlite:///") :],
         download_name=f"wallcharts-backup-{date.today().strftime('%Y-%m-%d')}.db",
@@ -182,16 +183,16 @@ def workplaces_view():
                 "latest"
             ),
         )
-        .join(Department, JOIN.LEFT_OUTER, on=(Department.workplace == Workplace.id))
-        .join(Worker, JOIN.LEFT_OUTER, on=(Department.id == Worker.organizing_dept_id))
-        .join(Participation, JOIN.LEFT_OUTER, on=(Worker.id == Participation.worker))
+        .join(Department, JOIN.LEFT_OUTER, on=Department.workplace)
+        .join(Worker, JOIN.LEFT_OUTER, on=Worker.department)
+        .join(Participation, JOIN.LEFT_OUTER, on=Participation.worker)
         .join(
             StructureTest,
             JOIN.LEFT_OUTER,
-            on=(Participation.structure_test == StructureTest.id),
+            on=Participation.structure_test,
         )
         .where(Worker.active == True)
-        .group_by(Workplace.id)
+        .group_by(Workplace.name)
     )
     return render_template("workplaces.html", workplaces=workplaces, latest_test_name=latest_test.name)
 
@@ -202,7 +203,7 @@ def workplaces():
     if request.method == "POST":
         action = request.args.get("action")
         if action == "create":
-            Workplace.create(
+            Workplace.get_or_create(
                 name=request.form["name"],
                 slug=slugify(request.form["name"]),
             )
@@ -210,14 +211,46 @@ def workplaces():
             return redirect(url_for("wallchart.admin"))
         elif action == "delete":
             workplace_id = request.args.get("workplace_id")
-            Workplace.delete().where(Workplace.id == workplace_id).execute()
-            Department.update({Department.workplace: None}).where(
-                Department.workplace == workplace_id
-            ).execute()
-            flash("Workplace deleted")
+            if Workplace.get_by_id(workplace_id).departments:
+                flash("Cannot delete a workplace with departments in it")
+            else:
+                Workplace.delete().where(Workplace.id == workplace_id).execute()
+                Department.update({Department.workplace: None}).where(
+                    Department.workplace == workplace_id
+                ).execute()
+                flash("Workplace deleted")
 
     workplaces = Workplace.select().group_by(Workplace.name)
     return render_template("workplaces_edit.html", workplaces=workplaces)
+
+
+@views.route("/manage-departments/", methods=["GET", "POST"])
+@login_required
+def manage_departments():
+    if request.method == "POST":
+        action = request.args.get("action")
+        if action == "create":
+            if Department.select().where((Department.slug == slugify(request.form["name"])) & (Department.workplace == request.form["workplace_id"])).count() > 0:
+                flash(f"Department \"{ request.form['name'] }\" ALREADY EXISTS in { Workplace.get_by_id(request.form['workplace_id']).name }")
+            else:
+                Department.create(
+                    name=request.form["name"],
+                    slug=slugify(request.form["name"]),
+                    workplace=request.form["workplace_id"]
+                )
+                flash(f"Department \"{ request.form['name'] }\" created in { Workplace.get_by_id(request.form['workplace_id']).name }")
+            return redirect(url_for("wallchart.admin"))
+        elif action == "delete":
+            department_id = request.args.get("department_id")
+            department = Department.get_by_id(department_id)
+            if department.workers1 or department.workers2:
+                flash("Cannot delete a department with workers in it")
+            else:
+                Department.delete().where(Department.id == department_id).execute()
+                flash("Department deleted")
+
+    workplaces = Workplace.select().group_by(Workplace.name)
+    return render_template("departments_edit.html", workplaces=workplaces)
 
 
 @views.route("/departments/")
@@ -251,13 +284,13 @@ def departments():
                 "latest"
             ),
         )
-        .join(Workplace, JOIN.LEFT_OUTER, on=(Department.workplace == Workplace.id))
-        .join(Worker, JOIN.LEFT_OUTER, on=(Department.id == Worker.organizing_dept_id))
-        .join(Participation, JOIN.LEFT_OUTER, on=(Worker.id == Participation.worker))
+        .join(Workplace, JOIN.LEFT_OUTER, on=Department.workplace)
+        .join(Worker, JOIN.LEFT_OUTER, on=(Worker.workplace or Worker.secondary_workplace))
+        .join(Participation, JOIN.LEFT_OUTER, on=Participation.worker)
         .join(
             StructureTest,
             JOIN.LEFT_OUTER,
-            on=(Participation.structure_test == StructureTest.id),
+            on=Participation.structure_test,
         )
         .where(Worker.active == True)
         .group_by(Department.id)
@@ -288,6 +321,7 @@ def department(department_slug=None):
         department = Department.get(Department.slug == department_slug)
     else:
         department = Department.get(Department.id == session["department_id"])
+    print(department.id)
 
     workers_active = (
         Worker.select(
@@ -297,10 +331,14 @@ def department(department_slug=None):
                 lambda idlist: [int(i) for i in (idlist.split(",") if idlist else [])]
             )
             .alias("participated"),
+            Department,
+            Participation.structure_test,
         )
-        .join(Participation, JOIN.LEFT_OUTER, on=(Worker.id == Participation.worker))
+        .join(Participation, JOIN.LEFT_OUTER, on=Participation.worker)
+        .switch(Worker)
+        .join(Department, on=Worker.department)
         .where(
-            ((Worker.organizing_dept_id == department.id))
+            ((Worker.department == department.id) | (Worker.secondary_department == department.id))
             & (Worker.updated > max_age())
             & (Worker.active == True)
         )
@@ -309,9 +347,8 @@ def department(department_slug=None):
     )
     workers_inactive = (
         Worker.select(Worker)
-        .where(
-            (Worker.organizing_dept_id == department.id)
-            & (Worker.department_id == department.id)
+        .join(Department, on=Worker.department).where(
+            (Department.id == department.id)
             & (Worker.updated > max_age())
             & (Worker.active == False)
         )
@@ -319,17 +356,16 @@ def department(department_slug=None):
         .order_by(Worker.active.desc(), Worker.name)
     )
 
-    workers_external = (
-        Worker.select(Worker)
-        .where(
-            (Worker.organizing_dept_id != department.id)
-            & (Worker.department_id == department.id)
-            & (Worker.updated > max_age())
-            & (Worker.active == False)
-        )
-        .group_by()
-        .order_by(Worker.active.desc(), Worker.name)
-    )
+    workers_external = ()
+        #Worker.select(Worker)
+        #.where(
+            #(Worker.secondary_department_id == department.id)
+            #& (Worker.updated > max_age())
+            #& (Worker.active == True)
+        #)
+        #.group_by()
+        #.order_by(Worker.active.desc(), Worker.name)
+    #)
 
     workplaces = Workplace.select().order_by(Workplace.name)
 
@@ -365,7 +401,7 @@ def structure_tests():
         .join(
             Participation,
             JOIN.LEFT_OUTER,
-            on=(StructureTest.id == Participation.structure_test),
+            on=Participation.structure_test
         )
         .group_by(StructureTest.id)
         .order_by(StructureTest.added)
@@ -416,12 +452,20 @@ def worker(worker_id=None):
 
         # only admins can switch worker departments
         if is_admin():
-            data["organizing_dept_id"] = request.form["organizing_dept"]
+            if request.form["dept"] == 'None':
+                data["department"] = None
+            else:
+                data["department"] = request.form["dept"]
+
+            if request.form["secondary_dept"] == 'None':
+                data["secondary_department"] = None
+            else:
+                data["secondary_department"] = request.form["secondary_dept"]
 
             if request.form.get("password"):
                 if request.form.get("email"):
                     data["password"] = bcryptify(request.form["password"].strip())
-                    data["dept_chair_id"] = request.form["organizing_dept"]
+                    data["dept_chair_id"] = request.form["dept"]
                     flash("Added as user")
                 else:
                     flash("If setting a password a email address is required, too")
@@ -434,7 +478,6 @@ def worker(worker_id=None):
                 name=request.form.get("name", "").strip(),
                 contract="manual",
                 # special case for manually added worker
-                department_id=0,
                 **data,
                 updated=date.today(),
                 workplace=0,
@@ -445,7 +488,7 @@ def worker(worker_id=None):
             url_for(
                 "wallchart.department",
                 department_slug=Department.select(Department.slug)
-                .where(Department.id == request.form["organizing_dept"])
+                .where(Department.id == request.form["dept"])
                 .scalar(),
             )
         )
@@ -464,7 +507,7 @@ def worker(worker_id=None):
             Participation,
             JOIN.LEFT_OUTER,
             on=(
-                (StructureTest.id == Participation.structure_test)
+                Participation.structure_test
                 & (Participation.worker == worker_id)
             ),
         )
@@ -477,6 +520,7 @@ def worker(worker_id=None):
         worker=worker,
         structure_tests=structure_tests,
         Department=Department,
+        Workplace=Workplace,
         last_updated=last_updated(),
     )
 
@@ -501,7 +545,7 @@ def users():
 
     users = list(
         Worker.select(Worker, Department.name.alias("department_name"))
-        .join(Department, on=(Worker.organizing_dept_id == Department.id))
+        .join(Department, on=Worker.department)
         .where(Worker.password.is_null(False))
         .order_by(Worker.name)
         .dicts()
@@ -517,7 +561,7 @@ def users():
 def former():
     former = list(
         Worker.select(Worker, Department.name.alias("department_name"))
-        .join(Department, on=(Worker.organizing_dept_id == Department.id))
+        .join(Department, on=Worker.department)
         .where(Worker.active != True)
         .order_by(Worker.name)
         .dicts()
@@ -529,7 +573,7 @@ def former():
 @login_required
 def participation(worker_id, structure_test_id, status):
     worker = Worker.get(Worker.id == worker_id)
-    if session.get("department_id") == worker.organizing_dept_id or is_admin():
+    if session.get("department_id") == worker.department.id or is_admin():
         if status == 1:
             Participation.create(worker=worker_id, structure_test=structure_test_id)
         else:
@@ -571,10 +615,15 @@ def upload_record():
             parse_csv(record)
 
     new_workers = (
-        Worker.select(Worker, Department.name.alias("department_name"))
-        .join(Department, on=(Worker.department_id == Department.id))
-        .where(Worker.department_id != 0)
-        .where((Worker.added == last_updated()) & (Worker.department_id != 0))
+        Worker.select(
+            Worker, Department.name.alias("department_name"), Workplace.name.alias("workplace_name")
+        ).join(
+            Department, on=Worker.department
+        ).join(
+            Workplace, on=Department.workplace
+        ).where(
+            (Worker.added == last_updated())
+        )
     ).dicts()
 
     if new_workers:
