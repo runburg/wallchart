@@ -24,9 +24,9 @@ class Workplace(db_wrapper.Model):
 
 class Department(db_wrapper.Model):
     id = AutoField()
-    name = CharField(unique=True)
+    name = CharField()
     slug = CharField()
-    alias = CharField(unique=True, null=True)
+    alias = CharField(null=True)
     workplace = ForeignKeyField(Workplace, backref="departments", null=True)
 
 
@@ -35,16 +35,17 @@ class Worker(db_wrapper.Model):
     name = CharField()
     preferred_name = CharField(null=True)
     pronouns = CharField(null=True)
-    email = CharField(unique=True, null=True)
-    phone = IntegerField(unique=True, null=True)
+    email = CharField(null=True)
+    phone = IntegerField(null=True)
     notes = TextField(null=True)
     contract = CharField(null=True)
-    workplace = CharField(null=True)
-    department_id = IntegerField(null=True)
-    organizing_dept_id = IntegerField(null=True)
+    workplace = ForeignKeyField(Workplace, null=True)
+    secondary_workplace = ForeignKeyField(Workplace, null=True)
+    department = ForeignKeyField(Department, backref="workers1", null=True)
+    secondary_department = ForeignKeyField(Department, backref="workers2", null=True)
     workplace_chair_id = ForeignKeyField(Workplace, field=Workplace.id, backref="chairs", null=True)
     dept_chair_id = ForeignKeyField(
-        Department, field=Department.id, backref="chairs", null=True
+        Department, field=Department.id, backref="stewards", null=True
     )
     active = BooleanField(default=True)
     added = DateField(default=date.today)
@@ -52,7 +53,7 @@ class Worker(db_wrapper.Model):
     password = CharField(null=True)
 
     class Meta:
-        indexes = ((("name",), True),)
+        indexes = ((("name", "workplace", "secondary_workplace", "department", "secondary_department"), True),)
 
 
 class StructureTest(db_wrapper.Model):
@@ -82,7 +83,11 @@ def create_tables():
             name="Admin",
             slug="admin",
         )
-
+        structure_test, _ = StructureTest.get_or_create(
+                name="test",
+                description="created on initialization of db. feel free to delete :)",
+                active=False,
+        )
 
 def close():
     if not db_wrapper.database.is_closed():

@@ -11,7 +11,7 @@
         <th scope="col">Chair(s)</th>
     </tr>
     {% for department in departments %}
-        {% set worker_count = department.none + ([department.members, department.latest] | max) %}
+    {% set worker_count = ((department.workers1 | length) + (department.workers2 | length)) %}
         {% if worker_count > 0 %}
             <tr>
                 <td>
@@ -67,7 +67,7 @@
         <th scope="col">Name</th>
     </tr>
     {% for department in workplaces %}
-    {% if department.worker_count == 0 %}
+    {% if (department.workers1 | length ) + (department.workers2 | length )  == 0 %}
     <tr>
         <td>
             <a href="{{ url_for('wallchart.department', department_slug=department.slug) }}">

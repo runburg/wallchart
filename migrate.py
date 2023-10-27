@@ -31,7 +31,7 @@ Worker.delete().where(Worker.id == 648).execute()
 Worker.delete().where(Worker.id == 1289).execute()
 
 migrate(
-    migrator.drop_not_null("Worker", "organizing_dept_id"),
+    migrator.drop_not_null("Worker", "secondary_dept_id"),
     migrator.drop_not_null("Worker", "workplace"),
     migrator.drop_not_null("Worker", "contract"),
     migrator.drop_not_null("Worker", "department_id"),

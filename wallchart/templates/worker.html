@@ -28,6 +28,14 @@
     {% if worker.password %}
     <span class="badge bg-primary">Can Login</span>
     {% endif %}
+    {% if worker.workplace_chair_id %}
+    <span class="badge bg-success">Chair | {{ worker.workplace.name }}</span>
+    {% endif %}
+    {% if worker.dept_chair_id %}
+    <span class="badge bg-success">Steward</span>
+    {% endif %}
+
+
     {% if worker.updated != last_updated %}
     <span class="badge bg-danger">Not updated in last record</span>
     {% else %}
@@ -41,7 +49,7 @@
 <form action="{{ url_for('wallchart.worker', worker_id=worker.id) if worker else url_for('wallchart.worker', worker_id=None) }}"
     method=post autocomplete="new-password">
     <fieldset
-        {{ "disabled" if (session.department_id != worker.organizing_dept_id) and not session.admin }}>
+        {{ "disabled" if (session.department_id != worker.department) and not session.admin }}>
         {% if not worker %}
         <div class="row mb-3">
             <label for="name" class="col-md-2 col-form-label">Real Name</label>
@@ -87,11 +95,32 @@
         <div class="row mb-3">
             <label for="dept" class="col-md-2 col-form-label">Department</label>
             <div class="col-9">
-                <input name="dept" type="text" class="form-control"
-                    value="{{ Department.get_by_id(worker.department_id or 0).name }}" disabled />
+                <select name="dept" class="form-select">
+		    <option value="None" 
+			    {% if worker.department == None %}
+			    selected="selected"
+			    {% endif %}
+			    >None
+		    </option>
+		    {% for workplace in Workplace.select().order_by(Workplace.name) %}
+		    <option value="{{ workplace }}" disabled>{{ workplace.name }}</option>
+		    {% for department in Department.select().where(Department.workplace == workplace).order_by(Department.name) %}
+		    <option value="{{ department }}"
+			{% if worker.department == department %} selected="selected"
+			{% endif %}>
+			{% if department.alias %}
+			{{ department.alias }} ({{ department.name }})
+			{% else %}
+			{{ department.name }}
+			{% endif %}
+			-- {{ workplace.name }}
+		    </option>
+		    {% endfor %}
+		    {% endfor %}
+                </select>
             </div>
             <div class="col-1">
-                <a href="/department/{{ Department.get_by_id(worker.department_id or 0).slug }}">
+                <a href="/department/{{ Department.get_by_id(worker.department or 0).slug }}">
                     <button type="button" class="btn btn-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
                             fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
@@ -104,26 +133,35 @@
         </div>
         {% if session.admin %}
         <div class="row mb-3">
-            <label for="organizing_dept" class="col-md-2 col-form-label">Organizing
-                department</label>
+            <label for="secondary_dept" class="col-md-2 col-form-label">Secondary department</label>
             <div class="col-9">
-                <select name="organizing_dept" class="form-select">
-                    {% for department in Department.select().order_by(Department.name) %}
-                    <option value="{{ department.id }}"
-                        {%- if worker.organizing_dept_id == department.id %} selected="selected"
-                        {% endif %}>
-                        {% if department.alias %}
-                        {{ department.alias }} ({{ department.name }})
-                        {% else %}
-                        {{ department.name }}
-                        {% endif %}
-                    </option>
-                    {% endfor %}
+                <select name="secondary_dept" class="form-select">
+		    <option value="None" 
+			    {% if not worker.secondary_department %}
+			    selected="selected"
+			    {% endif %}
+			    >None
+		    </option>
+		    {% for workplace in Workplace.select().order_by(Workplace.name) %}
+		    <option value=" {{ workplace }}" disabled>{{ workplace.name }}</option>
+		    {% for department in Department.select().where(Department.workplace == workplace).order_by(Department.name) %}
+		    <option value=" {{ department }}"
+			{% if worker.secondary_department == department %} selected="selected"
+										 {% endif %}>
+			{% if department.alias %}
+			{{ department.alias }} ({{ department.name }})
+			{% else %}
+			{{ department.name }}
+			{% endif %}
+		    -- {{ workplace.name }}
+		    </option>
+		    {% endfor %}
+		    {% endfor %}
                 </select>
             </div>
             <div class="col-1">
                 <a
-                    href="/department/{{ Department.get_by_id(worker.organizing_dept_id or 0).slug }}">
+                    href="/department/{{ Department.get_by_id(worker.secondary_department or 0).slug }}">
                     <button type="button" class="btn btn-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
                             fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
@@ -146,7 +184,7 @@
         </div>
         {% endif %}
 
-        {% if (session.department_id == worker.organizing_dept_id) or session.admin %}
+        {% if (session.department_id == worker.secondary_department) or session.admin %}
         <div class="row mb-3">
             <div class="col-md-12">
                 <div class="form-floating">
@@ -201,7 +239,7 @@
                         data-structure_test="{{ structure_test.id }}"
                         name="{{ structure_test.name }}" onchange="toggleParticipation(this);"
                         {{ "checked" if structure_test.added }}
-                        {{ "disabled" if (session.department_id != worker.organizing_dept_id) and not session.admin }}>
+                        {{ "disabled" if (session.department_id != worker.secondary_department) and not session.admin }}>
                 </td>
             </tr>
             {% endfor %}

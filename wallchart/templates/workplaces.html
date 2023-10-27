@@ -11,10 +11,11 @@ function toggle_departments(workplace) {
 <h2 class="p-2 text-left display-5">Workplaces ({{ workplaces | length }})</h2>
 <table class="table table-hover">
     <tr>
-        <th scope="col" class="col-5">Name</th>
+        <th scope="col" class="col-4">Name</th>
         <!-- <th scope="col" class="col-1">Members</th> -->
-		<th scope="col" class="col-1">{{ latest_test_name }}</th>
-        <th scope="col" class="col-5">Organizer</th>
+	<th scope="col" class="col-1">{{ latest_test_name }}</th>
+        <th scope="col" class="col-2">Chair</th>
+        <th scope="col" class="col-2">Steward</th>
     </tr>
     {% for workplace in workplaces %}
     <tr>
@@ -36,9 +37,7 @@ function toggle_departments(workplace) {
             <meter style="height: 25px;" low="50" high="80" max="100" optimum="100" value="{{ percentage }}" title="{{ workplace.latest }}&#x2F;{{ workplace.worker_count }}"></meter>
         </td>
         <td>
-		<ul>
 		{% for chair in workplace.chairs %}
-		<li>
 		<a href="{{ url_for("wallchart.worker", worker_id=chair.id) }}">
 		    {%- if chair.preferred_name %}
 		    {{ chair.preferred_name }} ({{ chair.name }})
@@ -46,26 +45,30 @@ function toggle_departments(workplace) {
 		    {{ chair.name }}
 		    {% endif %}
 		</a>
-		</li>
 		{% endfor %}
-		<ul>
 	</td>
+	<td></td>
       </tr>
       {% for department in workplace.departments %}
-      <tr class="d-none workplace-{{ workplace.id }}">
-	<td>
+      <tr class="d-none bg-light workplace-{{ workplace.id }}">
+	<td style="padding-left:40px">
+		<a href="{{ url_for("wallchart.department", department_slug=department.slug) }}">
                 {% if department.alias %}
                 <b>{{ department.alias }}</b> <small class="text-muted">{{ department.name }}</small>
                 {% else %}
                 <b>{{ department.name }}</b>
                 {% endif %}
+		</a>
 	</td>
-	<td></td>
-	<td></td>
+        <td>
+            {% if workplace.worker_count > 0 %}
+            {% set percentage = ( workplace.latest / workplace.worker_count * 100) | round(2) %}
+            {% endif %}
+            <meter style="height: 25px;" low="50" high="80" max="100" optimum="100" value="{{ percentage }}" title="{{ workplace.latest }}&#x2F;{{ workplace.worker_count }}"></meter>
+        </td>
+
 	<td>
-		<ul><ul>
 		{% for chair in department.chairs %}
-		<li>
 		<a href="{{ url_for("wallchart.worker", worker_id=chair.id) }}">
 		    {%- if chair.preferred_name %}
 		    {{ chair.preferred_name }} ({{ chair.name }})
@@ -73,10 +76,20 @@ function toggle_departments(workplace) {
 		    {{ chair.name }}
 		    {% endif %}
 		</a>
-		</li>
 		{% endfor %}
-		</ul></ul>
 	</td>
+	<td>
+		{% for steward in department.stewards %}
+		<a href="{{ url_for("wallchart.worker", worker_id=steward.id) }}">
+		    {%- if steward.preferred_name %}
+		    {{ steward.preferred_name }} ({{ steward.name }})
+		    {% else %}
+		    {{ steward.name }}
+		    {% endif %}
+		</a>
+		{% endfor %}
+	</td>
+
     </tr>
     {% endfor %}
     {% endfor %}
