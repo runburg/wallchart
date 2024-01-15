@@ -238,7 +238,7 @@
                     <input type="checkbox" data-worker="{{ worker.id }}"
                         data-structure_test="{{ structure_test.id }}"
                         name="{{ structure_test.name }}" onchange="toggleParticipation(this);"
-                        {{ "checked" if structure_test.added }}
+                        {{ "checked" if structure_test.participated }}
                         {{ "disabled" if (session.department_id != worker.secondary_department) and not session.admin }}>
                 </td>
             </tr>

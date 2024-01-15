@@ -64,12 +64,12 @@ class StructureTest(db_wrapper.Model):
     active = BooleanField(default=True)
     added = DateField(default=date.today)
 
-# class StructureTestWorkplaceRelation(db_wrapper.Model):
-#     workplace = ForeignKeyField(Workplace)
-#     structure_test = ForeignKeyField(StructureTest)
+class StructureTestWorkplaceRelation(db_wrapper.Model):
+    workplace = ForeignKeyField(Workplace)
+    structure_test = ForeignKeyField(StructureTest)
 
-#     class Meta:
-#         primary_key = CompositeKey('structure_test', 'workplace')
+    class Meta:
+        primary_key = CompositeKey('structure_test', 'workplace')
     
 
 class Participation(db_wrapper.Model):

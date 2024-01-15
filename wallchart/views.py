@@ -513,18 +513,20 @@ def worker(worker_id=None):
             StructureTest.name,
             StructureTest.description,
             Participation.added,
+            fn.COALESCE(Participation.worker, 0).alias('participated'),
         )
         .join(
             Participation,
             JOIN.LEFT_OUTER,
             on=(
-                Participation.structure_test
+                (StructureTest.id == Participation.structure_test)
                 & (Participation.worker == worker_id)
             ),
         )
         .order_by(StructureTest.added)
         .dicts()
     )
+    print(structure_tests)
 
     return render_template(
         "worker.html",
