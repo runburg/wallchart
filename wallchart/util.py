@@ -1,11 +1,12 @@
 import csv
+import shutil
 from datetime import date, timedelta
 from functools import wraps
 from io import TextIOWrapper
 
 import bcrypt
 import yaml
-from flask import redirect, session, url_for, flash
+from flask import redirect, session, url_for, flash, current_app
 from peewee import fn
 from slugify import slugify
 
@@ -175,6 +176,15 @@ def parse_csv(csv_file_b):
                 )
                 print(f"creating new worker {worker.name} {worker.department.name} {worker.workplace.name}")
 
+            if not worker.email:
+                email = email
+            else:
+                email = worker.email
+            if not worker.phone:
+                phone = phone_number
+            else:
+                phone = worker.phone
+
             worker.update(
                 updated=date.today(),
                 contract='roster',
@@ -182,9 +192,23 @@ def parse_csv(csv_file_b):
                 secondary_department=secondary_dept_id,
                 workplace=workplace_id,
                 secondary_workplace=secondary_workplace_id,
+                email=email,
+                phone=phone,
                 active=True,
             ).where(
                 Worker.id == worker.id,
             ).execute()
 
+
+
     Worker.update(active=False).where(Worker.updated != date.today()).execute()
+
+
+def upload_db(wallchart_db):
+    """Upload a database to replace the current database instance of the wallchart.
+
+    :param wallchart_db: a SQLiteDatabase file (usually a backup of the wallchart)
+    """
+    wallchart_db.save(current_app.config["DATABASE"][len("sqlite:///") :])
+    # shutil.copy(wallchart_db, current_app.config["DATABASE"][len("sqlite:///") :])
+

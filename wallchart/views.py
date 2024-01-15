@@ -1,4 +1,6 @@
-from datetime import date
+from datetime import datetime
+import shutil
+from pathlib import Path
 
 import bcrypt
 import phonenumbers
@@ -10,6 +12,7 @@ from flask import (
     render_template,
     request,
     send_file,
+    send_from_directory,
     session,
     url_for,
 )
@@ -17,7 +20,7 @@ from peewee import JOIN, Case, fn
 from playhouse.flask_utils import get_object_or_404
 from slugify import slugify
 
-from wallchart.db import Department, Participation, StructureTest, Workplace, Worker
+from wallchart.db import Department, Participation, StructureTest, Workplace, Worker, StructureTestWorkplaceRelation
 from wallchart.util import (
     bcryptify,
     is_admin,
@@ -25,6 +28,7 @@ from wallchart.util import (
     login_required,
     max_age,
     parse_csv,
+    upload_db,
 )
 
 views = Blueprint("wallchart", __name__, url_prefix="/")
@@ -91,6 +95,13 @@ def download_db():
         download_name=f"wallcharts-backup-{date.today().strftime('%Y-%m-%d')}.db",
     )
 
+@views.route("/download_backup_db/<filename>")
+@login_required
+def download_backup_db(filename):
+    return send_file(
+        current_app.instance_path / Path('backup_dbs') / filename,
+        download_name=filename,
+    )
 
 @views.route("/admin")
 @login_required
@@ -597,6 +608,7 @@ def logout():
 @login_required
 def upload_record():
     new_workers = []
+    backup_db_file = ""
     if request.method == "POST":
         if "record" not in request.files:
             flash("Missing file")
@@ -607,12 +619,28 @@ def upload_record():
             flash("No selected file")
             return redirect(request.url)
 
-        if not record.filename.lower().endswith(".csv"):
-            flash("Wrong filetype, convert to CSV please")
+        # allowed file types for upload 
+        parser_dict = {
+            '.csv': parse_csv,
+            '.db': upload_db,
+        }
+
+        if not record.filename.lower().endswith(tuple(parser_dict.keys())):
+            flash(f"Wrong filetype, valid file types are: {list(parse_dict.keys())}")
             return redirect(request.url)
 
         if record:
-            parse_csv(record)
+            # backup current db
+            backup_db_file = current_app.instance_path / Path(f"backup_dbs/wallcharts-backup-{datetime.now().strftime('%Y-%m-%d_%H%M%S')}.db")
+            shutil.copy(current_app.config["DATABASE"][len("sqlite:///") :], backup_db_file)
+
+            # get the file ending
+            file_ending = record.filename.lower().split('.')[-1]
+
+            # call the corresponding function for this file type
+            parser_dict['.'+file_ending](record)
+
+            # parse_csv(record)
 
     new_workers = (
         Worker.select(
@@ -632,4 +660,5 @@ def upload_record():
     return render_template(
         "upload_record.html",
         new_workers=new_workers,
+        backup_db_file = str(backup_db_file).split('/')[-1],
     )

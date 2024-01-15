@@ -45,6 +45,11 @@ def create_app(test_config=None):
     except OSError:
         pass
 
+    try:
+        os.makedirs(app.instance_path / Path('backup_dbs'))
+    except OSError:
+        pass
+
     from wallchart import db
 
     app.register_blueprint(db.db)

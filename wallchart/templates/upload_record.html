@@ -6,6 +6,12 @@
   <input type=submit value=Upload>
 </form>
 
+{% if backup_db_file != "" %}
+<ul>
+<li><a href="{{ url_for('wallchart.download_backup_db', filename=backup_db_file) }}">Click here to download backup of previous wallchart database.</a></li>
+</ul>
+{% endif %}
+
 <ul>
   <li>New workers: {{ new_workers | length }}</li>
 </ul>
