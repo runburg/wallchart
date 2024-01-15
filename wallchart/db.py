@@ -10,6 +10,7 @@ from peewee import (
     IntegerField,
     TextField,
     CompositeKey,
+    ManyToManyField,
 )
 
 from wallchart import db_wrapper
@@ -21,6 +22,9 @@ class Workplace(db_wrapper.Model):
     id = AutoField()
     name = CharField(unique=True)
     slug = CharField()
+
+    class Meta:
+        table_name = 'workplace'
 
 
 class Department(db_wrapper.Model):
@@ -64,12 +68,18 @@ class StructureTest(db_wrapper.Model):
     active = BooleanField(default=True)
     added = DateField(default=date.today)
 
-class StructureTestWorkplaceRelation(db_wrapper.Model):
-    workplace = ForeignKeyField(Workplace)
-    structure_test = ForeignKeyField(StructureTest)
+    workplaces = ManyToManyField(Workplace, backref="structure_tests")
 
     class Meta:
-        primary_key = CompositeKey('structure_test', 'workplace')
+        table_name = 'structure_test'
+        indexes = ((("name",), True),)
+
+# class StructureTestWorkplaceRelation(db_wrapper.Model):
+#     workplace = ForeignKeyField(Workplace)
+#     structure_test = ForeignKeyField(StructureTest)
+
+#     class Meta:
+#         primary_key = CompositeKey('structure_test', 'workplace')
     
 
 class Participation(db_wrapper.Model):

@@ -26,6 +26,15 @@
             <textarea name="description">{{ structure_test.description }}</textarea>
         </p>
         <p>
+        <!-- Dropdown menu for selecting workplaces -->
+        <label for="workplaces">Select Workplaces:</label>
+        <select name="workplaces" id="workplaces" multiple style="height: 300px; width: 300px; resize: vertical;">
+            {% for workplace in workplaces %}
+                <option value="{{ workplace.id }}">{{ workplace.name }}</option>
+            {% endfor %}
+        </select>
+        </p>
+        <p>
             <label for="active">Active</label>
             <input name="active" type="checkbox" value=True {{ "checked" if (structure_test.active or not structure_test) }} />
         </p>

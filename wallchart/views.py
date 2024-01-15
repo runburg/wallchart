@@ -20,7 +20,7 @@ from peewee import JOIN, Case, fn
 from playhouse.flask_utils import get_object_or_404
 from slugify import slugify
 
-from wallchart.db import Department, Participation, StructureTest, Workplace, Worker, StructureTestWorkplaceRelation
+from wallchart.db import Department, Participation, StructureTest, Workplace, Worker
 from wallchart.util import (
     bcryptify,
     is_admin,
@@ -155,6 +155,13 @@ def structure_test(structure_test_id=None):
                 flash("Structure test updated")
         else:
             structure_test, created = StructureTest.get_or_create(**data)
+
+            # Get the list of selected workplace IDs from the form
+            selected_workplaces = request.form.getlist('workplaces')
+
+            # Add selected workplaces to the ManyToMany relationship
+            structure_test.workplaces.add(selected_workplaces)
+
             if created:
                 flash(f'Added Structure Test "{ structure_test.name }"')
             else:
@@ -162,12 +169,15 @@ def structure_test(structure_test_id=None):
 
         return redirect(url_for("wallchart.structure_tests"))
 
+    # For GET request, fetch the list of workplaces and pass it to the template
+    workplaces = Workplace.select()
+
     if structure_test_id:
         structure_test = StructureTest.get(StructureTest.id == structure_test_id)
     else:
         structure_test = None
 
-    return render_template("structure_test.html", structure_test=structure_test)
+    return render_template("structure_test.html", structure_test=structure_test, workplaces=workplaces)
 
 
 @views.route("/find_worker")
