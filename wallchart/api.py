@@ -46,7 +46,7 @@ def api_worker(worker_id):
 def api_participation():
     return jsonify(
         list(
-            Participation.select(Participation, Worker.department.id)
+            Participation.select(Participation, Worker.department)
             .join(Worker, on=Participation.worker)
             .dicts()
         )

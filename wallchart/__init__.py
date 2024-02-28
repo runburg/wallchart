@@ -25,6 +25,9 @@ def create_app(test_config=None):
                 app.config.from_pyfile(path / "config.py")
                 print(f"Config loaded from {path}/config.py")
                 break
+
+        # Running the application normally will put the jjjjjjj
+        # app.config["DATABASE"] = f"sqlite:///{app.instance_path}/{app.config['DATABASE']}"
     else:
         # load a test_config in for unit testing
         if isinstance(test_config, dict):
@@ -32,7 +35,9 @@ def create_app(test_config=None):
         elif test_config.endswith(".py"):
             app.config.from_pyfile(test_config)
 
-    app.config["DATABASE"] = f"sqlite:///{app.instance_path}/{app.config['DATABASE']}"
+    print(f"Instance path: {app.instance_path}")
+    app.config["DATABASE"] = f"sqlite:///{app.config['DATABASE']}"
+    print(f"Database path: {app.config['DATABASE']}")
 
     assert app.secret_key != "changeme", f"Please change SECRET_KEY in config.py"
 
@@ -42,6 +47,11 @@ def create_app(test_config=None):
 
     try:
         os.makedirs(app.instance_path)
+    except OSError:
+        pass
+
+    try:
+        os.makedirs(app.instance_path / Path('backup_dbs'))
     except OSError:
         pass
 

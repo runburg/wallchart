@@ -31,7 +31,7 @@ def test_api_worker_login_not_found(client):
 
 def test_api_worker_login_data(client):
     admin_login(client)
-    rv = client.get("/api/worker/1")
+    rv = client.get("/api/worker/1", follow_redirects=True)
     assert rv.status_code == 200
     assert rv.json["active"] == True
     assert rv.json["id"] == 1
