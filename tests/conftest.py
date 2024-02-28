@@ -1,6 +1,7 @@
 import os
 import tempfile
 
+import pdb
 import pytest
 from flask import current_app
 
@@ -16,12 +17,15 @@ def app():
     app = wallchart.create_app(
         {
             "ADMIN_PASSWORD": "admin",
+            # "DATABASE": ":memory:",
             "DATABASE": db_path,
             "SECRET_KEY": "test",
             "TESTING": True,
         }
     )
+    print('testing status', app.testing)
     create_tables()
+    # pdb.set_trace()
     load_test_data()
     yield app
     os.close(db_fd)

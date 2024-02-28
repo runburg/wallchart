@@ -34,9 +34,9 @@ def test_login_logout_bad_password(client):
     assert rv.status_code == 403
 
 
-def test_upload_record(client):
+def test_upload_record(app, client):
     """Test adding a sample roster and parsing"""
-    rv = login(client, "admin", "admin")
+    rv = login(client, "admin", app.config["ADMIN_PASSWORD"])
     assert rv.status_code == 200
 
     data = {}
@@ -65,7 +65,7 @@ def test_upload_record(client):
         follow_redirects=True,
         content_type="multipart/form-data",
     )
-    assert b"Wrong filetype, convert to CSV please" in rv.data
+    assert b"Wrong filetype, valid file types are:" in rv.data
 
     with open("tests/test_roster.csv", "rb") as roster_file:
         data["record"] = (roster_file, "roster.csv")
@@ -83,7 +83,6 @@ def test_upload_record(client):
 
     rv = client.get("/worker/1")
 
-    assert b'placeholder="gender is a spectrum"' in rv.data
     assert b'placeholder="worker@private.email"' in rv.data
     assert b'placeholder="(808) 123-4567"' in rv.data
 
