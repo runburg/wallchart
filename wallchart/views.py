@@ -20,7 +20,7 @@ from peewee import JOIN, Case, fn
 from playhouse.flask_utils import get_object_or_404
 from slugify import slugify
 
-from wallchart.db import Department, Participation, StructureTest, Workplace, Worker
+from wallchart.db import Department, Participation, StructureTest, Workplace, Worker, StructureTestWorkplaceRelation
 from wallchart.util import (
     bcryptify,
     is_admin,
@@ -626,7 +626,6 @@ def upload_record():
         }
 
         if not record.filename.lower().endswith(tuple(parser_dict.keys())):
-            flash(f"Wrong filetype, valid file types are: {list(parser_dict.keys())}")
             return redirect(request.url)
 
         if record:
